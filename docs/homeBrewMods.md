@@ -14,10 +14,16 @@ Create backup of firmware onto SD card
 
 ![](/docs/20210325_162953.jpg)
 
-
+Purchase vDS game "Brain Age"
 
 ![](/docs/20210325_164019.jpg)
+
+Start Internet Browser
+
 ![](/docs/20210325_164038.jpg)
+
+Run exploit via internet Browser
+
 ![](/docs/20210325_164237.jpg)
 
 ![](/docs/20210325_164255.jpg)
