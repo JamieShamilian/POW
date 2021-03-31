@@ -1,5 +1,14 @@
 
+Wii mod guide
+
+https://wii.guide/
+
+Wii U mod guide
+
 https://wiiu.hacks.guide/#/haxchi/ds-vc-choice
+
+
+
 
 ![](/docs/20210325_162953.jpg)
 ![](/docs/20210325_164019.jpg)
