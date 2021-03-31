@@ -8,9 +8,14 @@ Wii U mod guide
 https://wiiu.hacks.guide/#/haxchi/ds-vc-choice
 
 
+Create SD card to run exploit.
 
+Create backup of firmware onto SD card
 
 ![](/docs/20210325_162953.jpg)
+
+
+
 ![](/docs/20210325_164019.jpg)
 ![](/docs/20210325_164038.jpg)
 ![](/docs/20210325_164237.jpg)
