@@ -1,0 +1,3 @@
+
+wii sprite dir
+
