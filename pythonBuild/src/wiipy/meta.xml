@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<app version="1">
+	<name>WiiPy</name>
+	<version>alpha2</version>
+        <release_date>200808020000</release_date>
+	<coder></coder>
+	<short_description>The Python interpreter</short_description>
+	<long_description>This loads a python script named wiipy/run.py inside the front SD</long_description>
+</app>
