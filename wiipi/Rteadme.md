@@ -1,3 +1,0 @@
-
-wiipy from homebrew
-
