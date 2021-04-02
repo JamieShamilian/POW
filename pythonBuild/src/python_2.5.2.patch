@@ -1,0 +1,947 @@
+diff -ruN raw/Python-2.5.2/configure.in Python-2.5.2/configure.in
+--- raw/Python-2.5.2/configure.in	2008-02-13 14:17:17.000000000 -0500
++++ Python-2.5.2/configure.in	2008-06-06 21:25:02.000000000 -0400
+@@ -3410,44 +3410,6 @@
+ 					   
+ 
+ 
+-AC_MSG_CHECKING(for %zd printf() format support)
+-AC_TRY_RUN([#include <stdio.h>
+-#include <stddef.h>
+-#include <string.h>
+-
+-#ifdef HAVE_SYS_TYPES_H
+-#include <sys/types.h>
+-#endif
+-
+-#ifdef HAVE_SSIZE_T
+-typedef ssize_t Py_ssize_t;
+-#elif SIZEOF_VOID_P == SIZEOF_LONG
+-typedef long Py_ssize_t;
+-#else
+-typedef int Py_ssize_t;
+-#endif
+-
+-int main()
+-{
+-    char buffer[256];
+-
+-    if(sprintf(buffer, "%zd", (size_t)123) < 0)
+-       	return 1;
+-
+-    if (strcmp(buffer, "123"))
+-	return 1;
+-
+-    if (sprintf(buffer, "%zd", (Py_ssize_t)-123) < 0)
+-       	return 1;
+-
+-    if (strcmp(buffer, "-123"))
+-	return 1;
+-
+-    return 0;
+-}],
+-[AC_MSG_RESULT(yes)
+- AC_DEFINE(PY_FORMAT_SIZE_T, "z", [Define to printf format modifier for Py_ssize_t])],
+- AC_MSG_RESULT(no))
+ 
+ AC_CHECK_TYPE(socklen_t,,
+   AC_DEFINE(socklen_t,int,
+Binary files raw/Python-2.5.2/hostpython and Python-2.5.2/hostpython differ
+diff -ruN raw/Python-2.5.2/Lib/traceback.py Python-2.5.2/Lib/traceback.py
+--- raw/Python-2.5.2/Lib/traceback.py	2006-09-24 08:50:28.000000000 -0400
++++ Python-2.5.2/Lib/traceback.py	2008-06-07 21:12:55.000000000 -0400
+@@ -1,6 +1,6 @@
+ """Extract, format and print information about Python stack traces."""
+ 
+-import linecache
++#import linecache
+ import sys
+ import types
+ 
+@@ -65,8 +65,9 @@
+         name = co.co_name
+         _print(file,
+                '  File "%s", line %d, in %s' % (filename,lineno,name))
+-        linecache.checkcache(filename)
+-        line = linecache.getline(filename, lineno, f.f_globals)
++        #linecache.checkcache(filename)
++        #line = linecache.getline(filename, lineno, f.f_globals)
++        line = None
+         if line: _print(file, '    ' + line.strip())
+         tb = tb.tb_next
+         n = n+1
+@@ -97,8 +98,9 @@
+         co = f.f_code
+         filename = co.co_filename
+         name = co.co_name
+-        linecache.checkcache(filename)
+-        line = linecache.getline(filename, lineno, f.f_globals)
++        #linecache.checkcache(filename)
++        #line = linecache.getline(filename, lineno, f.f_globals)
++        line = None
+         if line: line = line.strip()
+         else: line = None
+         list.append((filename, lineno, name, line))
+@@ -294,8 +296,9 @@
+         co = f.f_code
+         filename = co.co_filename
+         name = co.co_name
+-        linecache.checkcache(filename)
+-        line = linecache.getline(filename, lineno, f.f_globals)
++        #linecache.checkcache(filename)
++        #line = linecache.getline(filename, lineno, f.f_globals)
++        line = None
+         if line: line = line.strip()
+         else: line = None
+         list.append((filename, lineno, name, line))
+diff -ruN raw/Python-2.5.2/Makefile.pre.in Python-2.5.2/Makefile.pre.in
+--- raw/Python-2.5.2/Makefile.pre.in	2007-12-05 15:43:57.000000000 -0500
++++ Python-2.5.2/Makefile.pre.in	2008-06-06 21:26:29.000000000 -0400
+@@ -173,6 +173,7 @@
+ 
+ PYTHON=		python$(EXE)
+ BUILDPYTHON=	python$(BUILDEXE)
++HOSTPYTHON=	./$(BUILDPYTHON)
+ 
+ # === Definitions added by makesetup ===
+ 
+@@ -200,6 +201,8 @@
+ # Parser
+ PGEN=		Parser/pgen$(EXE)
+ 
++HOSTPGEN=	$(PGEN)
++
+ POBJS=		\
+ 		Parser/acceler.o \
+ 		Parser/grammar1.o \
+@@ -347,10 +350,7 @@
+ 
+ # Build the shared modules
+ sharedmods: $(BUILDPYTHON)
+-	case $$MAKEFLAGS in \
+-	*-s*) $(RUNSHARED) CC='$(CC)' LDSHARED='$(BLDSHARED)' OPT='$(OPT)' ./$(BUILDPYTHON) -E $(srcdir)/setup.py -q build;; \
+-	*) $(RUNSHARED) CC='$(CC)' LDSHARED='$(BLDSHARED)' OPT='$(OPT)' ./$(BUILDPYTHON) -E $(srcdir)/setup.py build;; \
+-	esac
++	echo 'What'
+ 
+ # Build static library
+ # avoid long command lines, same as LIBRARY_OBJS
+@@ -474,7 +474,7 @@
+ 
+ $(GRAMMAR_H) $(GRAMMAR_C): $(PGEN) $(GRAMMAR_INPUT)
+ 		-@ mkdir Include
+-		-$(PGEN) $(GRAMMAR_INPUT) $(GRAMMAR_H) $(GRAMMAR_C)
++		-$(HOSTPGEN) $(GRAMMAR_INPUT) $(GRAMMAR_H) $(GRAMMAR_C)
+ 
+ $(PGEN):	$(PGENOBJS)
+ 		$(CC) $(OPT) $(LDFLAGS) $(PGENOBJS) $(LIBS) -o $(PGEN)
+@@ -781,20 +781,20 @@
+ 		done; \
+ 	done
+ 	$(INSTALL_DATA) $(srcdir)/LICENSE $(DESTDIR)$(LIBDEST)/LICENSE.txt
+-	PYTHONPATH=$(DESTDIR)$(LIBDEST)  $(RUNSHARED) \
+-		./$(BUILDPYTHON) -Wi -tt $(DESTDIR)$(LIBDEST)/compileall.py \
++	-PYTHONPATH=$(DESTDIR)$(LIBDEST)  $(RUNSHARED) \
++		$(HOSTPYTHON) -Wi -tt $(DESTDIR)$(LIBDEST)/compileall.py \
+ 		-d $(LIBDEST) -f \
+ 		-x 'bad_coding|badsyntax|site-packages' $(DESTDIR)$(LIBDEST)
+-	PYTHONPATH=$(DESTDIR)$(LIBDEST) $(RUNSHARED) \
+-		./$(BUILDPYTHON) -Wi -tt -O $(DESTDIR)$(LIBDEST)/compileall.py \
++	-PYTHONPATH=$(DESTDIR)$(LIBDEST) $(RUNSHARED) \
++		$(HOSTPYTHON) -Wi -tt -O $(DESTDIR)$(LIBDEST)/compileall.py \
+ 		-d $(LIBDEST) -f \
+ 		-x 'bad_coding|badsyntax|site-packages' $(DESTDIR)$(LIBDEST)
+ 	-PYTHONPATH=$(DESTDIR)$(LIBDEST)  $(RUNSHARED) \
+-		./$(BUILDPYTHON) -Wi -t $(DESTDIR)$(LIBDEST)/compileall.py \
++		$(HOSTPYTHON) -Wi -t $(DESTDIR)$(LIBDEST)/compileall.py \
+ 		-d $(LIBDEST)/site-packages -f \
+ 		-x badsyntax $(DESTDIR)$(LIBDEST)/site-packages
+ 	-PYTHONPATH=$(DESTDIR)$(LIBDEST) $(RUNSHARED) \
+-		./$(BUILDPYTHON) -Wi -t -O $(DESTDIR)$(LIBDEST)/compileall.py \
++		$(HOSTPYTHON) -Wi -t -O $(DESTDIR)$(LIBDEST)/compileall.py \
+ 		-d $(LIBDEST)/site-packages -f \
+ 		-x badsyntax $(DESTDIR)$(LIBDEST)/site-packages
+ 
+@@ -894,12 +894,7 @@
+ # Install the dynamically loadable modules
+ # This goes into $(exec_prefix)
+ sharedinstall:
+-	$(RUNSHARED) ./$(BUILDPYTHON) -E $(srcdir)/setup.py install \
+-	   	--prefix=$(prefix) \
+-		--install-scripts=$(BINDIR) \
+-		--install-platlib=$(DESTSHARED) \
+-		--root=/$(DESTDIR)
+-
++	echo 'Skipping sharedinstall'
+ # Here are a couple of targets for MacOSX again, to install a full
+ # framework-based Python. frameworkinstall installs everything, the
+ # subtargets install specific parts. Much of the actual work is offloaded to
+
+diff -ruN raw/Python-2.5.2/Modules/getaddrinfo.c Python-2.5.2/Modules/getaddrinfo.c
+--- raw/Python-2.5.2/Modules/getaddrinfo.c	2003-08-17 17:28:39.000000000 -0400
++++ Python-2.5.2/Modules/getaddrinfo.c	2008-06-07 15:00:26.000000000 -0400
+@@ -341,37 +341,7 @@
+ 			}
+ 			port = htons((u_short)atoi(servname));
+ 		} else {
+-			struct servent *sp;
+-			char *proto;
+-
+-			proto = NULL;
+-			switch (pai->ai_socktype) {
+-			case GAI_ANY:
+-				proto = NULL;
+-				break;
+-			case SOCK_DGRAM:
+-				proto = "udp";
+-				break;
+-			case SOCK_STREAM:
+-				proto = "tcp";
+-				break;
+-			default:
+-				fprintf(stderr, "panic!\n");
+-				break;
+-			}
+-			if ((sp = getservbyname(servname, proto)) == NULL)
+-				ERR(EAI_SERVICE);
+-			port = sp->s_port;
+-			if (pai->ai_socktype == GAI_ANY) {
+-				if (strcmp(sp->s_proto, "udp") == 0) {
+-					pai->ai_socktype = SOCK_DGRAM;
+-					pai->ai_protocol = IPPROTO_UDP;
+-				} else if (strcmp(sp->s_proto, "tcp") == 0) {
+-                                        pai->ai_socktype = SOCK_STREAM;
+-                                        pai->ai_protocol = IPPROTO_TCP;
+-                                } else
+-                                        ERR(EAI_PROTOCOL);	/*xxx*/
+-                        }
++			ERR(EAI_SERVICE);
+ 		}
+ 	}
+ 	
+@@ -424,7 +394,7 @@
+ 				v4a = ntohl(v4a);
+ 				if (IN_MULTICAST(v4a) || IN_EXPERIMENTAL(v4a))
+ 					pai->ai_flags &= ~AI_CANONNAME;
+-				v4a >>= IN_CLASSA_NSHIFT;
++				v4a >>= 24;
+ 				if (v4a == 0 || v4a == IN_LOOPBACKNET)
+ 					pai->ai_flags &= ~AI_CANONNAME;
+ 				break;
+@@ -489,6 +459,8 @@
+ 	struct addrinfo *pai;
+ 	int port0;
+ {
++	return 1; // stub
++#if 0
+ 	u_short port = port0 & 0xffff;
+ 	struct hostent *hp;
+ 	struct addrinfo *cur;
+@@ -524,6 +496,7 @@
+  /* bad: */
+ 	*res = NULL;
+ 	return error;
++#endif
+ }
+ 
+ static int
+@@ -552,23 +525,11 @@
+ 	} else
+ 		hp = getipnodebyname(hostname, af, AI_ADDRCONFIG, &h_error);
+ #else
+-	hp = gethostbyname(hostname);
+-	h_error = h_errno;
++	hp = net_gethostbyname(hostname);
++	
+ #endif
+ 	if (hp == NULL) {
+-		switch (h_error) {
+-		case HOST_NOT_FOUND:
+-		case NO_DATA:
+-			error = EAI_NODATA;
+-			break;
+-		case TRY_AGAIN:
+-			error = EAI_AGAIN;
+-			break;
+-		case NO_RECOVERY:
+-		default:
+-			error = EAI_FAIL;
+-			break;
+-		}
++		error = EAI_FAIL;
+ 		goto free;
+ 	}
+ 
+diff -ruN raw/Python-2.5.2/Modules/getnameinfo.c Python-2.5.2/Modules/getnameinfo.c
+--- raw/Python-2.5.2/Modules/getnameinfo.c	2001-12-02 05:15:37.000000000 -0500
++++ Python-2.5.2/Modules/getnameinfo.c	2008-06-07 15:00:26.000000000 -0400
+@@ -95,6 +95,9 @@
+ 	size_t servlen;
+ 	int flags;
+ {
++	return ENI_MEMORY;
++	
++#if 0
+ 	struct gni_afd *gni_afd;
+ 	struct servent *sp;
+ 	struct hostent *hp;
+@@ -141,13 +144,7 @@
+ 			return ENI_MEMORY;
+ 		strcpy(serv, numserv);
+ 	} else {
+-		sp = getservbyport(port, (flags & NI_DGRAM) ? "udp" : "tcp");
+-		if (sp) {
+-			if (strlen(sp->s_name) > servlen)
+-				return ENI_MEMORY;
+-			strcpy(serv, sp->s_name);
+-		} else
+-			return ENI_NOSERVNAME;
++		return ENI_NOSERVNAME;
+ 	}
+ 
+ 	switch (sa->sa_family) {
+@@ -155,7 +152,7 @@
+ 		v4a = ((struct sockaddr_in *)sa)->sin_addr.s_addr;
+ 		if (IN_MULTICAST(v4a) || IN_EXPERIMENTAL(v4a))
+ 			flags |= NI_NUMERICHOST;
+-		v4a >>= IN_CLASSA_NSHIFT;
++		v4a >>= 24;
+ 		if (v4a == 0 || v4a == IN_LOOPBACKNET)
+ 			flags |= NI_NUMERICHOST;			
+ 		break;
+@@ -181,7 +178,7 @@
+ 		hp = getipnodebyaddr(addr, gni_afd->a_addrlen, gni_afd->a_af, &h_error);
+ #else
+ 		hp = gethostbyaddr(addr, gni_afd->a_addrlen, gni_afd->a_af);
+-		h_error = h_errno;
++		
+ #endif
+ 
+ 		if (hp) {
+@@ -200,15 +197,10 @@
+ 			freehostent(hp);
+ #endif
+ 		} else {
+-			if (flags & NI_NAMEREQD)
+-				return ENI_NOHOSTNAME;
+-			if (inet_ntop(gni_afd->a_af, addr, numaddr, sizeof(numaddr))
+-			    == NULL)
+-				return ENI_NOHOSTNAME;
+-			if (strlen(numaddr) > hostlen)
+-				return ENI_MEMORY;
++			return ENI_MEMORY;
+ 			strcpy(host, numaddr);
+ 		}
+ 	}
+ 	return SUCCESS;
++#endif	
+ }
+diff -ruN raw/Python-2.5.2/Modules/Setup.dist Python-2.5.2/Modules/Setup.dist
+--- raw/Python-2.5.2/Modules/Setup.dist	2006-08-06 03:26:21.000000000 -0400
++++ Python-2.5.2/Modules/Setup.dist	2008-06-06 22:00:14.000000000 -0400
+@@ -109,9 +109,9 @@
+ # This only contains the minimal set of modules required to run the 
+ # setup.py script in the root of the Python source tree.
+ 
+-posix posixmodule.c		# posix (UNIX) system calls
+-errno errnomodule.c		# posix (UNIX) errno values
+-pwd pwdmodule.c			# this is needed to find out the user's home dir
++#posix posixmodule.c		# posix (UNIX) system calls
++#errno errnomodule.c		# posix (UNIX) errno values
++#pwd pwdmodule.c			# this is needed to find out the user's home dir
+ 				# if $HOME is not set
+ _sre _sre.c			# Fredrik Lundh's new regular expressions
+ _codecs _codecsmodule.c		# access to the builtin codecs and codec registry
+@@ -149,7 +149,7 @@
+ # modules are to be built as shared libraries (see above for more
+ # detail; also note that *static* reverses this effect):
+ 
+-#*shared*
++*static*
+ 
+ # GNU readline.  Unlike previous Python incarnations, GNU readline is
+ # now incorporated in an optional module, configured in the Setup file
+@@ -164,18 +164,18 @@
+ 
+ # Modules that should always be present (non UNIX dependent):
+ 
+-#array arraymodule.c	# array objects
+-#cmath cmathmodule.c # -lm # complex math library functions
+-#math mathmodule.c # -lm # math library functions, e.g. sin()
+-#_struct _struct.c	# binary structure packing/unpacking
++array arraymodule.c	# array objects
++cmath cmathmodule.c # -lm # complex math library functions
++math mathmodule.c # -lm # math library functions, e.g. sin()
++_struct _struct.c	# binary structure packing/unpacking
+ #time timemodule.c # -lm # time operations and variables
+-#operator operator.c	# operator.add() and similar goodies
+-#_weakref _weakref.c	# basic weak reference support
+-#_testcapi _testcapimodule.c    # Python C API test module
+-#_random _randommodule.c	# Random number generator
+-#collections collectionsmodule.c # Container types
+-#itertools itertoolsmodule.c	# Functions creating iterators for efficient looping 
+-#strop stropmodule.c		# String manipulations
++operator operator.c	# operator.add() and similar goodies
++_weakref _weakref.c	# basic weak reference support
++_testcapi _testcapimodule.c    # Python C API test module
++_random _randommodule.c	# Random number generator
++collections collectionsmodule.c # Container types
++itertools itertoolsmodule.c	# Functions creating iterators for efficient looping 
++strop stropmodule.c		# String manipulations
+ 
+ #unicodedata unicodedata.c    # static Unicode character database
+ 
+@@ -484,4 +484,4 @@
+ # xx xxmodule.c
+ 
+ # Another example -- the 'xxsubtype' module shows C-level subtyping in action
+-xxsubtype xxsubtype.c
++#xxsubtype xxsubtype.c
+diff -ruN raw/Python-2.5.2/Modules/socketmodule.c Python-2.5.2/Modules/socketmodule.c
+--- raw/Python-2.5.2/Modules/socketmodule.c	2007-03-31 14:56:11.000000000 -0400
++++ Python-2.5.2/Modules/socketmodule.c	2008-06-07 21:29:58.000000000 -0400
+@@ -241,7 +241,7 @@
+ #ifndef MS_WINDOWS
+ 
+ /* Non-MS WINDOWS includes */
+-# include <netdb.h>
++//# include <netdb.h>
+ 
+ /* Headers needed for inet_ntoa() and inet_addr() */
+ # ifdef __BEOS__
+@@ -250,7 +250,7 @@
+ #  include <netdb.h>
+ typedef size_t socklen_t;
+ # else
+-#   include <arpa/inet.h>
++#   include <network.h>
+ # endif
+ 
+ # ifndef RISCOS
+@@ -747,9 +747,9 @@
+ 
+ 		/* See if the socket is ready */
+ 		if (writing)
+-			n = select(s->sock_fd+1, NULL, &fds, NULL, &tv);
++			n = net_select(s->sock_fd+1, NULL, &fds, NULL, &tv);
+ 		else
+-			n = select(s->sock_fd+1, &fds, NULL, NULL, &tv);
++			n = net_select(s->sock_fd+1, &fds, NULL, NULL, &tv);
+ 	}
+ #endif
+ 	
+@@ -1546,7 +1546,7 @@
+ 	Py_BEGIN_ALLOW_THREADS
+ 	timeout = internal_select(s, 0);
+ 	if (!timeout)
+-		newfd = accept(s->sock_fd, SAS2SA(&addrbuf), &addrlen);
++		newfd = net_accept(s->sock_fd, SAS2SA(&addrbuf), &addrlen);
+ 	Py_END_ALLOW_THREADS
+ 
+ 	if (timeout == 1) {
+@@ -1572,11 +1572,12 @@
+ 		SOCKETCLOSE(newfd);
+ 		goto finally;
+ 	}
+-	addr = makesockaddr(s->sock_fd, SAS2SA(&addrbuf),
++	/*addr = makesockaddr(s->sock_fd, SAS2SA(&addrbuf),
+ 			    addrlen, s->sock_proto);
++	
+ 	if (addr == NULL)
+-		goto finally;
+-
++		goto finally;*/ // TODO: bring this back
++	addr = Py_None;
+ 	res = PyTuple_Pack(2, sock, addr);
+ 
+ finally:
+@@ -1728,7 +1729,7 @@
+ 				      &level, &optname, &buf, &buflen))
+ 			return NULL;
+ 	}
+-	res = setsockopt(s->sock_fd, level, optname, (void *)buf, buflen);
++	res = net_setsockopt(s->sock_fd, level, optname, (void *)buf, buflen);
+ 	if (res < 0)
+ 		return s->errorhandler();
+ 	Py_INCREF(Py_None);
+@@ -1750,54 +1751,8 @@
+ static PyObject *
+ sock_getsockopt(PySocketSockObject *s, PyObject *args)
+ {
+-	int level;
+-	int optname;
+-	int res;
+-	PyObject *buf;
+-	socklen_t buflen = 0;
+-
+-#ifdef __BEOS__
+-	/* We have incomplete socket support. */
+-	PyErr_SetString(socket_error, "getsockopt not supported");
++	PyErr_SetString(socket_error, "getsockopt not implemented");
+ 	return NULL;
+-#else
+-
+-	if (!PyArg_ParseTuple(args, "ii|i:getsockopt",
+-			      &level, &optname, &buflen))
+-		return NULL;
+-
+-	if (buflen == 0) {
+-		int flag = 0;
+-		socklen_t flagsize = sizeof flag;
+-		res = getsockopt(s->sock_fd, level, optname,
+-				 (void *)&flag, &flagsize);
+-		if (res < 0)
+-			return s->errorhandler();
+-		return PyInt_FromLong(flag);
+-	}
+-#ifdef __VMS
+-	/* socklen_t is unsigned so no negative test is needed,
+-	   test buflen == 0 is previously done */
+-	if (buflen > 1024) {
+-#else
+-	if (buflen <= 0 || buflen > 1024) {
+-#endif
+-		PyErr_SetString(socket_error,
+-				"getsockopt buflen out of range");
+-		return NULL;
+-	}
+-	buf = PyString_FromStringAndSize((char *)NULL, buflen);
+-	if (buf == NULL)
+-		return NULL;
+-	res = getsockopt(s->sock_fd, level, optname,
+-			 (void *)PyString_AS_STRING(buf), &buflen);
+-	if (res < 0) {
+-		Py_DECREF(buf);
+-		return s->errorhandler();
+-	}
+-	_PyString_Resize(&buf, buflen);
+-	return buf;
+-#endif /* __BEOS__ */
+ }
+ 
+ PyDoc_STRVAR(getsockopt_doc,
+@@ -1820,7 +1775,7 @@
+ 	if (!getsockaddrarg(s, addro, SAS2SA(&addrbuf), &addrlen))
+ 		return NULL;
+ 	Py_BEGIN_ALLOW_THREADS
+-	res = bind(s->sock_fd, SAS2SA(&addrbuf), addrlen);
++	res = net_bind(s->sock_fd, SAS2SA(&addrbuf), addrlen);
+ 	Py_END_ALLOW_THREADS
+ 	if (res < 0)
+ 		return s->errorhandler();
+@@ -1867,7 +1822,7 @@
+ 	int res, timeout;
+ 
+ 	timeout = 0;
+-	res = connect(s->sock_fd, addr, addrlen);
++	res = net_connect(s->sock_fd, addr, addrlen);
+ 
+ #ifdef MS_WINDOWS
+ 
+@@ -1921,7 +1876,7 @@
+ 		if (res < 0 && errno == EINPROGRESS && IS_SELECTABLE(s)) {
+ 			timeout = internal_select(s, 1);
+ 			if (timeout == 0) {
+-				res = connect(s->sock_fd, addr, addrlen);
++				res = net_connect(s->sock_fd, addr, addrlen);
+ 				if (res < 0 && errno == EISCONN)
+ 					res = 0;
+ 			}
+@@ -2061,6 +2016,9 @@
+ static PyObject *
+ sock_getsockname(PySocketSockObject *s)
+ {
++	PyErr_SetString(socket_error, "getsockname not implemented");
++	return NULL;
++#if 0
+ 	sock_addr_t addrbuf;
+ 	int res;
+ 	socklen_t addrlen;
+@@ -2069,12 +2027,13 @@
+ 		return NULL;
+ 	memset(&addrbuf, 0, addrlen);
+ 	Py_BEGIN_ALLOW_THREADS
+-	res = getsockname(s->sock_fd, SAS2SA(&addrbuf), &addrlen);
++	res = net_getsockname(s->sock_fd, SAS2SA(&addrbuf), &addrlen);
+ 	Py_END_ALLOW_THREADS
+ 	if (res < 0)
+ 		return s->errorhandler();
+ 	return makesockaddr(s->sock_fd, SAS2SA(&addrbuf), addrlen,
+ 			    s->sock_proto);
++#endif
+ }
+ 
+ PyDoc_STRVAR(getsockname_doc,
+@@ -2129,7 +2088,7 @@
+ 	Py_BEGIN_ALLOW_THREADS
+ 	if (backlog < 1)
+ 		backlog = 1;
+-	res = listen(s->sock_fd, backlog);
++	res = net_listen(s->sock_fd, backlog);
+ 	Py_END_ALLOW_THREADS
+ 	if (res < 0)
+ 		return s->errorhandler();
+@@ -2235,7 +2194,7 @@
+ 	Py_BEGIN_ALLOW_THREADS
+ 	timeout = internal_select(s, 0);
+ 	if (!timeout)
+-		outlen = recv(s->sock_fd, cbuf, len, flags);
++		outlen = net_recv(s->sock_fd, cbuf, len, flags);
+ 	Py_END_ALLOW_THREADS
+ 
+ 	if (timeout == 1) {
+@@ -2436,14 +2395,14 @@
+ 	if (!timeout) {
+ #ifndef MS_WINDOWS
+ #if defined(PYOS_OS2) && !defined(PYCC_GCC)
+-		n = recvfrom(s->sock_fd, cbuf, len, flags,
++		n = net_recvfrom(s->sock_fd, cbuf, len, flags,
+ 			     SAS2SA(&addrbuf), &addrlen);
+ #else
+-		n = recvfrom(s->sock_fd, cbuf, len, flags,
++		n = net_recvfrom(s->sock_fd, cbuf, len, flags,
+ 			     (void *) &addrbuf, &addrlen);
+ #endif
+ #else
+-		n = recvfrom(s->sock_fd, cbuf, len, flags,
++		n = net_recvfrom(s->sock_fd, cbuf, len, flags,
+ 			     SAS2SA(&addrbuf), &addrlen);
+ #endif
+ 	}
+@@ -2585,7 +2544,7 @@
+ #ifdef __VMS
+ 		n = sendsegmented(s->sock_fd, buf, len, flags);
+ #else
+-		n = send(s->sock_fd, buf, len, flags);
++		n = net_send(s->sock_fd, buf, len, flags);
+ #endif
+ 	Py_END_ALLOW_THREADS
+ 
+@@ -2629,7 +2588,7 @@
+ #ifdef __VMS
+ 		n = sendsegmented(s->sock_fd, buf, len, flags);
+ #else
+-		n = send(s->sock_fd, buf, len, flags);
++		n = net_send(s->sock_fd, buf, len, flags);
+ #endif
+ 		if (n < 0)
+ 			break;
+@@ -2685,7 +2644,7 @@
+ 	Py_BEGIN_ALLOW_THREADS
+ 	timeout = internal_select(s, 1);
+ 	if (!timeout)
+-		n = sendto(s->sock_fd, buf, len, flags, SAS2SA(&addrbuf), addrlen);
++		n = net_sendto(s->sock_fd, buf, len, flags, SAS2SA(&addrbuf), addrlen);
+ 	Py_END_ALLOW_THREADS
+ 
+ 	if (timeout == 1) {
+@@ -2716,7 +2675,7 @@
+ 	if (how == -1 && PyErr_Occurred())
+ 		return NULL;
+ 	Py_BEGIN_ALLOW_THREADS
+-	res = shutdown(s->sock_fd, how);
++	res = net_shutdown(s->sock_fd, how);
+ 	Py_END_ALLOW_THREADS
+ 	if (res < 0)
+ 		return s->errorhandler();
+@@ -2875,10 +2834,10 @@
+ 		return -1;
+ 
+ 	Py_BEGIN_ALLOW_THREADS
+-	fd = socket(family, type, proto);
++	fd = net_socket(family, type, proto);
+ 	Py_END_ALLOW_THREADS
+ 
+-#ifdef MS_WINDOWS
++#if 1
+ 	if (fd == INVALID_SOCKET)
+ #else
+ 	if (fd < 0)
+@@ -2946,15 +2905,18 @@
+ static PyObject *
+ socket_gethostname(PyObject *self, PyObject *unused)
+ {
++	return PyString_FromString("wii");
++#if 0	
+ 	char buf[1024];
+ 	int res;
+ 	Py_BEGIN_ALLOW_THREADS
+-	res = gethostname(buf, (int) sizeof buf - 1);
++	res = net_gethostname(buf, (int) sizeof buf - 1);
+ 	Py_END_ALLOW_THREADS
+ 	if (res < 0)
+ 		return set_error();
+ 	buf[sizeof buf - 1] = '\0';
+ 	return PyString_FromString(buf);
++#endif
+ }
+ 
+ PyDoc_STRVAR(gethostname_doc,
+@@ -2998,11 +2960,7 @@
+ 
+ 	if (h == NULL) {
+ 		/* Let's get real error message to return */
+-#ifndef RISCOS
+-		set_herror(h_errno);
+-#else
+ 		PyErr_SetString(socket_error, "host not found");
+-#endif
+ 		return NULL;
+ 	}
+ 
+@@ -3171,7 +3129,7 @@
+ #ifdef USE_GETHOSTBYNAME_LOCK
+ 	PyThread_acquire_lock(netdb_lock, 1);
+ #endif
+-	h = gethostbyname(name);
++	h = net_gethostbyname(name);
+ #endif /* HAVE_GETHOSTBYNAME_R */
+ 	Py_END_ALLOW_THREADS
+ 	/* Some C libraries would require addr.__ss_family instead of
+@@ -3200,6 +3158,9 @@
+ static PyObject *
+ socket_gethostbyaddr(PyObject *self, PyObject *args)
+ {
++	PyErr_SetString(socket_error, "gethostbyaddr not implemented");
++	return NULL;
++#if 0
+ #ifdef ENABLE_IPV6
+ 	struct sockaddr_storage addr;
+ #else
+@@ -3275,6 +3236,7 @@
+ 	PyThread_release_lock(netdb_lock);
+ #endif
+ 	return ret;
++#endif
+ }
+ 
+ PyDoc_STRVAR(gethostbyaddr_doc,
+@@ -3292,18 +3254,8 @@
+ static PyObject *
+ socket_getservbyname(PyObject *self, PyObject *args)
+ {
+-	char *name, *proto=NULL;
+-	struct servent *sp;
+-	if (!PyArg_ParseTuple(args, "s|s:getservbyname", &name, &proto))
+-		return NULL;
+-	Py_BEGIN_ALLOW_THREADS
+-	sp = getservbyname(name, proto);
+-	Py_END_ALLOW_THREADS
+-	if (sp == NULL) {
+-		PyErr_SetString(socket_error, "service/proto not found");
+-		return NULL;
+-	}
+-	return PyInt_FromLong((long) ntohs(sp->s_port));
++	PyErr_SetString(socket_error, "getservbyname not implemented");
++	return NULL;
+ }
+ 
+ PyDoc_STRVAR(getservbyname_doc,
+@@ -3322,19 +3274,8 @@
+ static PyObject *
+ socket_getservbyport(PyObject *self, PyObject *args)
+ {
+-	unsigned short port;
+-	char *proto=NULL;
+-	struct servent *sp;
+-	if (!PyArg_ParseTuple(args, "H|s:getservbyport", &port, &proto))
+-		return NULL;
+-	Py_BEGIN_ALLOW_THREADS
+-	sp = getservbyport(htons(port), proto);
+-	Py_END_ALLOW_THREADS
+-	if (sp == NULL) {
+-		PyErr_SetString(socket_error, "port/proto not found");
+-		return NULL;
+-	}
+-	return PyString_FromString(sp->s_name);
++	PyErr_SetString(socket_error, "getservbyport not implemented");
++	return NULL;
+ }
+ 
+ PyDoc_STRVAR(getservbyport_doc,
+@@ -3352,6 +3293,9 @@
+ static PyObject *
+ socket_getprotobyname(PyObject *self, PyObject *args)
+ {
++	PyErr_SetString(socket_error, "getprotobyname not supported");
++	return NULL;
++#if 0	
+ 	char *name;
+ 	struct protoent *sp;
+ #ifdef __BEOS__
+@@ -3370,6 +3314,7 @@
+ 	}
+ 	return PyInt_FromLong((long) sp->p_proto);
+ #endif
++#endif
+ }
+ 
+ PyDoc_STRVAR(getprotobyname_doc,
+@@ -4443,7 +4388,9 @@
+ #ifndef __BEOS__
+ /* We have incomplete socket support. */
+ 	PyModule_AddIntConstant(m, "SOCK_RAW", SOCK_RAW);
++#if 0
+ 	PyModule_AddIntConstant(m, "SOCK_SEQPACKET", SOCK_SEQPACKET);
++#endif
+ #if defined(SOCK_RDM)
+ 	PyModule_AddIntConstant(m, "SOCK_RDM", SOCK_RDM);
+ #endif
+diff -ruN raw/Python-2.5.2/Modules/socketmodule.h Python-2.5.2/Modules/socketmodule.h
+--- raw/Python-2.5.2/Modules/socketmodule.h	2006-12-03 06:24:00.000000000 -0500
++++ Python-2.5.2/Modules/socketmodule.h	2008-06-07 15:13:00.000000000 -0400
+@@ -1,31 +1,9 @@
+ /* Socket module header file */
+ 
+ /* Includes needed for the sockaddr_* symbols below */
+-#ifndef MS_WINDOWS
+-#ifdef __VMS
+-#   include <socket.h>
+-# else
+-#   include <sys/socket.h>
+-# endif
+-# include <netinet/in.h>
+-# if !(defined(__BEOS__) || defined(__CYGWIN__) || (defined(PYOS_OS2) && defined(PYCC_VACPP)))
+-#  include <netinet/tcp.h>
+-# endif
+-
+-#else /* MS_WINDOWS */
+-#if _MSC_VER >= 1300
+-# include <winsock2.h>
+-# include <ws2tcpip.h>
+-# define HAVE_ADDRINFO
+-# define HAVE_SOCKADDR_STORAGE
+-# define HAVE_GETADDRINFO
+-# define HAVE_GETNAMEINFO
+-# define ENABLE_IPV6
+-#else
+-# include <winsock.h>
+-#endif
+-#endif
+ 
++#include <network.h>
++#define NO_DUP
+ #ifdef HAVE_SYS_UN_H
+ # include <sys/un.h>
+ #else
+
+diff -ruN raw/Python-2.5.2/Tools/freeze/freeze.py Python-2.5.2/Tools/freeze/freeze.py
+--- raw/Python-2.5.2/Tools/freeze/freeze.py	2004-07-18 02:16:08.000000000 -0400
++++ Python-2.5.2/Tools/freeze/freeze.py	2008-06-07 21:17:30.000000000 -0400
+@@ -114,7 +114,7 @@
+     extensions = []
+     exclude = []                        # settable with -x option
+     addn_link = []      # settable with -l, but only honored under Windows.
+-    path = sys.path[:]
++    path = [] #sys.path[:]
+     modargs = 0
+     debug = 1
+     odir = ''
+@@ -123,6 +123,7 @@
+     error_if_any_missing = 0
+ 
+     # default the exclude list for each platform
++    exclude = exclude + ['errno', 'posix', 'pwd', 'thread']
+     if win: exclude = exclude + [
+         'dos', 'dospath', 'mac', 'macpath', 'macfs', 'MACFS', 'posix',
+         'os2', 'ce', 'riscos', 'riscosenviron', 'riscospath',
+@@ -224,9 +225,10 @@
+     if ishome:
+         print "(Using Python source directory)"
+         binlib = exec_prefix
++        path.append(os.path.join(prefix, 'Lib'))
+         incldir = os.path.join(prefix, 'Include')
+         config_h_dir = exec_prefix
+-        config_c_in = os.path.join(prefix, 'Modules', 'config.c.in')
++        config_c_in = os.path.join(prefix, 'Modules', 'config.c')
+         frozenmain_c = os.path.join(prefix, 'Python', 'frozenmain.c')
+         makefile_in = os.path.join(exec_prefix, 'Makefile')
+         if win:
+@@ -341,7 +343,7 @@
+ 
+     # collect all modules of the program
+     dir = os.path.dirname(scriptfile)
+-    path[0] = dir
++    path.append(dir)
+     mf = modulefinder.ModuleFinder(path, debug, exclude, replace_paths)
+ 
+     if win and subsystem=='service':
+diff -ruN raw/Python-2.5.2/Tools/freeze/hello.py Python-2.5.2/Tools/freeze/hello.py
+--- raw/Python-2.5.2/Tools/freeze/hello.py	1999-02-16 18:05:46.000000000 -0500
++++ Python-2.5.2/Tools/freeze/hello.py	2008-06-06 22:56:43.000000000 -0400
+@@ -1 +1,11 @@
+-print 'Hello world...'
++import ogc, video
++xfb = ogc.Init()
++import sys
++sys.path = ['/']
++print 'Running "run.py"...'
++import run
++	
++print 'Returning to the menu...'
++
++for i in range(60*5):
++	video.WaitVSync()
+diff -ruN raw/Python-2.5.2/Tools/freeze/makefreeze.py Python-2.5.2/Tools/freeze/makefreeze.py
+--- raw/Python-2.5.2/Tools/freeze/makefreeze.py	2004-07-18 02:16:08.000000000 -0400
++++ Python-2.5.2/Tools/freeze/makefreeze.py	2008-06-07 20:12:42.000000000 -0400
+@@ -16,9 +16,56 @@
+ 
+ # if __debug__ == 0 (i.e. -O option given), set Py_OptimizeFlag in frozen app.
+ default_entry_point = """
+-int
+-main(int argc, char **argv)
+-{
++#include <stdio.h>
++#include <stdlib.h>
++#include <gccore.h>
++
++
++static void *xfb = NULL;
++static GXRModeObj *rmode = NULL;
++
++//---------------------------------------------------------------------------------
++int main(int argc, char **argv) {
++//---------------------------------------------------------------------------------
++
++	// Initialise the video system
++	VIDEO_Init();
++	
++	// Obtain the preferred video mode from the system
++	// This will correspond to the settings in the Wii menu
++	rmode = VIDEO_GetPreferredMode(NULL);
++
++	// Allocate memory for the display in the uncached region
++	xfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
++	
++	// Initialise the console, required for printf
++	console_init(xfb,20,20,rmode->fbWidth,rmode->xfbHeight,rmode->fbWidth*VI_DISPLAY_PIX_SZ);
++	
++	// Set up the video registers with the chosen mode
++	VIDEO_Configure(rmode);
++	
++	// Tell the video hardware where our display memory is
++	VIDEO_SetNextFramebuffer(xfb);
++	
++	// Make the display visible
++	VIDEO_SetBlack(FALSE);
++
++	// Flush the video register changes to the hardware
++	VIDEO_Flush();
++
++	// Wait for Video setup to complete
++	VIDEO_WaitVSync();
++	if(rmode->viTVMode&VI_NON_INTERLACE) VIDEO_WaitVSync();
++
++
++	// The console understands VT terminal escape codes
++	// This positions the cursor on row 2, column 0
++	// we can use variables for this with format codes too
++	// e.g. printf ("\x1b[%d;%dH", row, column );
++	
++
++	printf("Starting Python...\\n");
++
+         extern int Py_FrozenMain(int, char **);
+ """ + ((not __debug__ and """
+         Py_OptimizeFlag++;

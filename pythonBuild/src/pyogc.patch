@@ -1,0 +1,38 @@
+diff -ruN PyOGC/ogc/net.pyx ../PyOGC/ogc/net.pyx
+--- PyOGC/ogc/net.pyx   1969-12-31 19:00:00.000000000 -0500
++++ ../PyOGC/ogc/net.pyx        2008-06-07 20:24:20.000000000 -0400
+@@ -0,0 +1,21 @@
++import _socket
++cdef extern from "network.h":
++       int if_config(char *local_ip, char *netmask, char *gateway, char use_dhcp)
++       int net_init()
++
++def init():
++       cdef char localip[36]
++       cdef char gateway[36]
++       cdef char netmask[36]
++       cdef int retval
++       retval = -11
++       while retval == -11:
++               retval = net_init()
++       if retval != 0:
++               raise _socket.error(retval, "Invalid return from net_init()")
++
++       ret = if_config(localip, gateway, netmask, 1)
++       if ret == 0:
++               return (localip, gateway, netmask)
++       else:
++               raise _socket.error(ret, "Invalid return from if_config()")
+\ No newline at end of file
+diff -ruN PyOGC/ogc/ogc.pyx ../PyOGC/ogc/ogc.pyx
+--- PyOGC/ogc/ogc.pyx   2008-05-24 23:31:12.000000000 -0400
++++ ../PyOGC/ogc/ogc.pyx        2008-06-07 16:31:21.000000000 -0400
+@@ -9,7 +9,7 @@
+
+ cdef extern void exit(int)
+ cdef extern int  fatInitDefault()
+-
++cdef extern int net_init()
+ # TODO Priority:
+ #   PAD <DONE>
+ #   Framebuffer video support <Partially Implemented>
