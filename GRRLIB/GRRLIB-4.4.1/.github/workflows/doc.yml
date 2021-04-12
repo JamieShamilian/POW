@@ -1,0 +1,35 @@
+name: Documentation
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+
+  doc:
+    name: Deploy documentation
+    runs-on: ubuntu-20.04
+
+    steps:
+
+    - name: Checkout the Git repository
+      uses: actions/checkout@v2
+
+    - name: Install doxygen
+      run: |
+        sudo apt-get update
+        sudo apt-get install doxygen doxygen-latex graphviz
+
+    - name: Generate documentaion
+      run: |
+        doxygen grrlib.doxygen >/dev/null
+        make --directory=latex >/dev/null
+        touch html/.nojekyll
+        mv latex/refman.pdf html/PDF-documentation.pdf
+
+    - name: Deploy to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@4.1.0
+      with:
+        branch: gh-pages
+        folder: html

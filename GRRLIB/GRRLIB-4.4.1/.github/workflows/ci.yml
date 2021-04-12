@@ -1,0 +1,29 @@
+name: Continuous Integration
+
+on: [push, pull_request]
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitppc:latest
+
+    steps:
+
+    - name: Checkout the Git repository
+      uses: actions/checkout@v2
+
+    - name: Build library and examples
+      run: |
+        (cd GRRLIB && make clean all install)
+        (cd examples && make)
+        (cd GRRLIB && make PLATFORM=cube clean all)
+
+    - uses: actions/upload-artifact@master
+      with:
+        name: examples
+        path: |
+          examples/**/*.elf
+          !examples/template/*
