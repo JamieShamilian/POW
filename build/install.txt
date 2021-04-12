@@ -1,0 +1,22 @@
+Unix
+The offical installation guide can be found here
+
+Basically you need to grab the newest devkitpro pacman version and install the devkitPPC, devkitARM , general-tools and vim (for xxd) package.
+
+Example commands for installing:
+
+# Download newest deb file. (URL might be outdated in the future)
+wget https://github.com/devkitPro/pacman/releases/download/devkitpro-pacman-1.0.1/devkitpro-pacman.deb -O /tmp/devkitpro-pacman.deb
+# Install it
+sudo dpkg -i /tmp/devkitpro-pacman.deb
+# Install needed packages
+sudo dkp-pacman -Syu devkitPPC --needed
+sudo dkp-pacman -Syu devkitARM --needed
+sudo dkp-pacman -Syu general-tools --needed
+# We need xxd for building the plugin loader
+pacman -Syu vim
+After installing, make sure the following environment variables are set:
+
+DEVKITPRO=/opt/devkitpro
+DEVKITARM=/opt/devkitpro/devkitARM
+DEVKITPPC=/opt/devkitpro/devkitPPC

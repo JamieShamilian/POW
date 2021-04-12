@@ -1,0 +1,86 @@
+
+
+
+
+https://wiibrew.org/wiki/Devkitppc_setup_(Linux)#Installing_devkitPPC_from_devkitPro_packages
+
+https://devkitpro.org/wiki/Getting_Started#Unix-like_platforms
+
+
+run sudo (dkp-)pacman -S <console>-dev to install the tools and libraries for each console you wish to develop for. Groups currently available are :-
+gba-dev
+gp32-dev
+nds-dev
+3ds-dev
+gamecube-dev
+wii-dev
+wiiu-dev
+switch-dev
+
+
+
+https://devkitpro.org/wiki/devkitPro_pacman
+
+
+git clone https://github.com/grp/Wii.py
+
+
+sudo apt-get install gdebi-core 
+
+
+sudo gdebi devkitpro-pacman.amd64.deb
+
+DEVKITPRO=/opt/devkitpro
+DEVKITARM=/opt/devkitpro/devkitARM
+DEVKITPPC=/opt/devkitpro/devkitPPC
+
+
+sudo pacman-key --recv BC26F752D25B92CE272E0F44F7FD5492264BB9D0 --keyserver keyserver.ubuntu.com
+sudo pacman-key --lsign BC26F752D25B92CE272E0F44F7FD5492264BB9D0
+
+
+
+sudo pacman -U https://downloads.devkitpro.org/devkitpro-keyring.pkg.tar.x
+
+/etc/pacman.conf
+
+[dkp-libs]
+Server = https://downloads.devkitpro.org/package
+
+[dkp-linux]
+Server = https://downloads.devkitpro.org/packages/linux/$arch/
+
+sudo pacman -Syu
+
+pacman -Sl
+
+
+pacman -Sl dkp-libs
+
+
+pacman -Ss <search string>
+
+
+sudo (dkp-)pacman -S <group name>
+
+- gp32-dev
+- gba-dev 
+- nds-dev
+- 3ds-dev
+- gamecube-dev
+- wii-dev
+- wiiu-dev
+- switch-dev
+
+
+
+docker version
+
+
+https://hub.docker.com/u/devkitpro
+
+https://hub.docker.com/r/devkitpro/devkitppc
+
+docker pull devkitpro/devkitppc
+
+

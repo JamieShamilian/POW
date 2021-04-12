@@ -1,0 +1,135 @@
+Unix
+The offical installation guide can be found here
+
+Basically you need to grab the newest devkitpro pacman version and install the devkitPPC, devkitARM , general-tools and vim (for xxd) package.
+
+Example commands for installing:
+
+# Download newest deb file. (URL might be outdated in the future)
+wget https://github.com/devkitPro/pacman/releases/download/devkitpro-pacman-1.0.1/devkitpro-pacman.deb -O /tmp/devkitpro-pacman.deb
+# Install it
+sudo dpkg -i /tmp/devkitpro-pacman.deb
+# Install needed packages
+sudo dkp-pacman -Syu devkitPPC --needed
+sudo dkp-pacman -Syu devkitARM --needed
+sudo dkp-pacman -Syu general-tools --needed
+# We need xxd for building the plugin loader
+pacman -Syu vim
+After installing, make sure the following environment variables are set:
+
+DEVKITPRO=/opt/devkitpro
+DEVKITARM=/opt/devkitpro/devkitARM
+DEVKITPPC=/opt/devkitpro/devkitPPC
+
+
+ohn@ubu:~/project/POW$ sudo /opt/devkitpro/pacman/bin/pacman  -Syu devkitPPC --needed 
+:: Synchronizing package databases...
+ dkp-libs is up to date
+ dkp-linux is up to date
+:: Starting full system upgrade...
+resolving dependencies...
+looking for conflicting packages...
+
+Packages (3) devkitppc-rules-1.1.0-1  general-tools-1.2.0-2  devkitPPC-r38-1
+
+Total Download Size:    49.66 MiB
+Total Installed Size:  289.05 MiB
+
+:: Proceed with installation? [Y/n] y
+:: Retrieving packages...
+ devkitppc-rules-1.1.0-1-any                                                       3.5 KiB  0.00B/s 00:00 [##############################################################] 100%
+ general-tools-1.2.0-2-x86_64                                                     21.5 KiB  2.62M/s 00:00 [##############################################################] 100%
+ devkitPPC-r38-1-x86_64                                                           49.6 MiB   766K/s 01:06 [##############################################################] 100%
+(3/3) checking package integrity                                                                          [##############################################################] 100%
+(3/3) loading package files                                                                               [##############################################################] 100%
+(3/3) checking for file conflicts                                                                         [##############################################################] 100%
+(3/3) checking available disk space                                                                       [##############################################################] 100%
+:: Processing package changes...
+(1/3) installing general-tools                                                                            [##############################################################] 100%
+(2/3) installing devkitppc-rules                                                                          [##############################################################] 100%
+(3/3) installing devkitPPC                                                                                [##############################################################] 100%
+jamie@ubu:~/project/POW$ emacs install.txt &
+[7] 574118
+jamie@ubu:~/project/POW$ sudo /opt/devkitpro/pacman/bin/pacman  -Syu devkitARM --needed 
+:: Synchronizing package databases...
+ dkp-libs is up to date
+ dkp-linux is up to date
+:: Starting full system upgrade...
+resolving dependencies...
+looking for conflicting packages...
+
+Packages (3) devkitarm-crtls-1.1.0-1  devkitarm-rules-1.2.1-2  devkitARM-r55-1
+
+Total Download Size:    51.87 MiB
+Total Installed Size:  247.98 MiB
+
+
+jamie@ubu:~/project/POW$ sudo /opt/devkitpro/pacman/bin/pacman  -Syu devkitARM --needed 
+:: Synchronizing package databases...
+ dkp-libs is up to date
+ dkp-linux is up to date
+:: Starting full system upgrade...
+resolving dependencies...
+looking for conflicting packages...
+
+Packages (3) devkitarm-crtls-1.1.0-1  devkitarm-rules-1.2.1-2  devkitARM-r55-1
+
+Total Download Size:    51.87 MiB
+Total Installed Size:  247.98 MiB
+
+:: Proceed with installation? [Y/n]  
+:: Retrieving packages...
+ devkitarm-rules-1.2.1-2-any                                                       3.4 KiB  0.00B/s 00:00 [##############################################################] 100%
+ devkitarm-crtls-1.1.0-1-any                                                      15.8 KiB  3.85M/s 00:00 [##############################################################] 100%
+ devkitARM-r55-1-x86_64                                                           51.9 MiB   712K/s 01:15 [##############################################################] 100%
+(3/3) checking package integrity                                                                          [##############################################################] 100%
+(3/3) loading package files                                                                               [##############################################################] 100%
+(3/3) checking for file conflicts                                                                         [##############################################################] 100%
+(3/3) checking available disk space                                                                       [##############################################################] 100%
+:: Processing package changes...
+(1/3) installing devkitarm-rules                                                                          [##############################################################] 100%
+(2/3) installing devkitarm-crtls                                                                          [##############################################################] 100%
+(3/3) installing devkitARM                                                                                [##############################################################] 100%
+jamie@ubu:~/project/POW$ 
+
+
+
+jamie@ubu:~/project/POW/github/GRRLIB$ sudo /opt/devkitpro//pacman/bin/pacman --sync --needed --noconfirm libfat-ogc ppc-libpng ppc-freetype ppc-libjpeg-turbo
+[sudo] password for jamie: 
+warning: libfat-ogc-1.1.5-2 is up to date -- skipping
+warning: ppc-libpng-1.6.37-1 is up to date -- skipping
+warning: ppc-freetype-2.9.1-2 is up to date -- skipping
+warning: ppc-libjpeg-turbo-1.5.3-4 is up to date -- skipping
+ there is nothing to do
+jamie@ubu:~/project/POW/github/GRRLIB$ 
+
+
+
+jamie@ubu:~/project/POW/github/GRRLIB$ cd GRRLIB/lib/pngu/
+jamie@ubu:~/project/POW/github/GRRLIB/GRRLIB/lib/pngu$ make install
+mkdir -p  /opt/devkitpro/portlibs/ppc/lib  /opt/devkitpro/portlibs/ppc/include
+cp -f libpngu.a /opt/devkitpro/portlibs/ppc/lib/
+cp -f pngu.h /opt/devkitpro/portlibs/ppc/include/
+jamie@ubu:~/project/POW/github/GRRLIB/GRRLIB/lib/pngu$ 
+
+
+
+jamie@ubu:~/project/POW/github/GRRLIB/GRRLIB/GRRLIB$ make all
+GRRLIB_core.c
+GRRLIB_ttf.c
+GRRLIB_texEdit.c
+GRRLIB_fileIO.c
+GRRLIB_bmf.c
+GRRLIB_fbAdvanced.c
+GRRLIB_bmfx.c
+GRRLIB_render.c
+GRRLIB_3D.c
+GRRLIB_snapshot.c
+powerpc-eabi-gcc-ar -r libgrrlib.a GRRLIB_gecko.o GRRLIB_print.o GRRLIB_core.o GRRLIB_ttf.o GRRLIB_texEdit.o GRRLIB_fileIO.o GRRLIB_bmf.o GRRLIB_fbAdvanced.o GRRLIB_bmfx.o GRRLIB_render.o GRRLIB_3D.o GRRLIB_snapshot.o
+/opt/devkitpro/devkitPPC/bin/../lib/gcc/powerpc-eabi/10.2.0/../../../../powerpc-eabi/bin/ar: creating libgrrlib.a
+jamie@ubu:~/project/POW/github/GRRLIB/GRRLIB/GRRLIB$ make install
+mkdir -p  /opt/devkitpro/portlibs/ppc/lib  /opt/devkitpro/portlibs/ppc/include  /opt/devkitpro/portlibs/ppc/include/grrlib
+cp -f libgrrlib.a /opt/devkitpro/portlibs/ppc/lib/
+cp -f grrlib.h /opt/devkitpro/portlibs/ppc/include/
+cp -f grrlib/GRRLIB_fbSimple.h grrlib/GRRLIB_collision.h grrlib/GRRLIB_pixel.h grrlib/GRRLIB_private.h grrlib/GRRLIB_fbGX.h grrlib/GRRLIB_texSetup.h grrlib/GRRLIB_clipping.h grrlib/GRRLIB_fbComplex.h grrlib/GRRLIB__inline.h grrlib/GRRLIB_handle.h grrlib/GRRLIB__lib.h grrlib/GRRLIB_settings.h /opt/devkitpro/portlibs/ppc/include/grrlib
+jamie@ubu:~/project/POW/github/GRRLIB/GRRLIB/GRRLIB$ 
