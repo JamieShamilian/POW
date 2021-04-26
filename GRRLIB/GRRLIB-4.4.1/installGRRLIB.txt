@@ -1,0 +1,43 @@
+jamie@ubu:~/project/POW/github/GRRLIB$ sudo  /opt/devkitpro//pacman/bin/pacman --sync --needed --noconfirm libfat-ogc ppc-libpng ppc-freetype ppc-libjpeg-turbo
+resolving dependencies...
+looking for conflicting packages...
+
+Packages (6) ppc-bzip2-1.0.6-2  ppc-zlib-1.2.11-2  libfat-ogc-1.1.5-2  ppc-freetype-2.9.1-2  ppc-libjpeg-turbo-1.5.3-4  ppc-libpng-1.6.37-1
+
+Total Download Size:   0.96 MiB
+Total Installed Size:  5.60 MiB
+
+:: Proceed with installation? [Y/n] 
+:: Retrieving packages...
+ libfat-ogc-1.1.5-2-any                                                           93.1 KiB  1663K/s 00:00 [##############################################################] 100%
+ ppc-zlib-1.2.11-2-any                                                            77.6 KiB  3.79M/s 00:00 [##############################################################] 100%
+ ppc-libpng-1.6.37-1-any                                                         146.8 KiB  1529K/s 00:00 [##############################################################] 100%
+ ppc-bzip2-1.0.6-2-any                                                            33.1 KiB  8.09M/s 00:00 [##############################################################] 100%
+ ppc-freetype-2.9.1-2-any                                                        477.4 KiB   970K/s 00:00 [##############################################################] 100%
+ ppc-libjpeg-turbo-1.5.3-4-any                                                   158.7 KiB  3.88M/s 00:00 [##############################################################] 100%
+(6/6) checking package integrity                                                                          [##############################################################] 100%
+(6/6) loading package files                                                                               [##############################################################] 100%
+(6/6) checking for file conflicts                                                                         [##############################################################] 100%
+(6/6) checking available disk space                                                                       [##############################################################] 100%
+:: Processing package changes...
+(1/6) installing libfat-ogc                                                                               [##############################################################] 100%
+(2/6) installing ppc-zlib                                                                                 [##############################################################] 100%
+(3/6) installing ppc-libpng                                                                               [##############################################################] 100%
+(4/6) installing ppc-bzip2                                                                                [##############################################################] 100%
+(5/6) installing ppc-freetype                                                                             [##############################################################] 100%
+(6/6) installing ppc-libjpeg-turbo                                                                        [##############################################################] 100%
+jamie@ubu:~/project/POW/github/GRRLIB$ 
+
+
+
+jamie@ubu:~/project/POW/github/GRRLIB/GRRLIB/lib/pngu$ make clean all install
+rm -f pngu.o pngu.d libpngu.a
+pngu.c
+powerpc-eabi-gcc-ar -r libpngu.a pngu.o
+/opt/devkitpro/devkitPPC/bin/../lib/gcc/powerpc-eabi/10.2.0/../../../../powerpc-eabi/bin/ar: creating libpngu.a
+mkdir -p  /opt/devkitpro/portlibs/ppc/lib  /opt/devkitpro/portlibs/ppc/include
+cp -f libpngu.a /opt/devkitpro/portlibs/ppc/lib/
+cp -f pngu.h /opt/devkitpro/portlibs/ppc/include/
+
+
+
