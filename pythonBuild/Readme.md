@@ -1,4 +1,7 @@
 
+# method for crosscompile of Python 2.X 
+
+
 if [ ! -f Python-2.5.2.tar.bz2 ]
 
 then
@@ -33,6 +36,9 @@ patch -p1 <../python_2.5.2.patch
 autoconf
 
 . ../source_wii.sh
+
+
+# gekko no longer supported for host using eabi suffix
 
 ./configure --disable-shared --without-threads --disable-ipv6 --host=powerpc-gekko
 
